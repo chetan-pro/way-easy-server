@@ -1,9 +1,66 @@
 const clientService = require("../services/client.services");
 
+
+exports.login = (req, res, next) => {
+    const { owner_number, password } = req.body;
+    clientService.login({
+        owner_number,
+        password
+    }, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
 exports.registerClient = (req, res, next) => {
     console.log(req.body);
     console.log(req.fields);
     clientService.register(req.body, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.editClient = (req, res, next) => {
+    console.log(req.body);
+    console.log(req.fields);
+    clientService.clientEditProfile(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.getClients = (req, res, next) => {
+    console.log(req.body);
+    console.log(req.fields);
+    clientService.getClients(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.clientStatus = (req, res, next) => {
+    clientService.clientStatus(req, (error, result) => {
         if (error) {
             return next(error);
         }
@@ -25,7 +82,6 @@ exports.addPlaceAddress = (req, res, next) => {
         });
     });
 }
-
 
 exports.addClientTypeOfPlace = (req, res, next) => {
     clientService.addClientTypeOfPlace(req, (error, result) => {
@@ -207,8 +263,142 @@ exports.removeClientDaysOpen = (req, res, next) => {
     });
 }
 
+exports.editClientSpaces = (req, res, next) => {
+    clientService.editClientSpaces(req, req.files, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
 exports.addClientSpaces = (req, res, next) => {
     clientService.addClientSpaces(req, req.files, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.getClientSpaces = (req, res, next) => {
+    clientService.getClientSpaces(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.deleteClientSpace = (req, res, next) => {
+    clientService.deleteClientSpaces(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.addRemoveClientImages = (req, res, next) => {
+    clientService.addRemoveClientImages(req, req.files, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.addClientDJ = (req, res, next) => {
+    clientService.addClientDJ(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.getClientDJ = (req, res, next) => {
+    clientService.getClientDJ(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.editClientDJ = (req, res, next) => {
+    clientService.editClientDJ(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.deleteClientDJ = (req, res, next) => {
+    clientService.deleteClientDJ(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.addClientDecorator = (req, res, next) => {
+    clientService.addClientDecorator(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.getClientDecorator = (req, res, next) => {
+    clientService.getClientDecoration(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.editClientDecorator = (req, res, next) => {
+    clientService.editClientDecorator(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.deleteClientDecorator = (req, res, next) => {
+    clientService.deleteClientDecorator(req, (error, result) => {
         if (error) {
             return next(error);
         }

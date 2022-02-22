@@ -12,6 +12,9 @@ const clientDecoration = new Schema({
     decorator_description: {
         type: String,
     },
+    charge: {
+        type: Number
+    }
 });
 
 const ClientDecoration = mongoose.model("clientDecoration", clientDecoration);

@@ -12,19 +12,10 @@ const clientSpaces = new Schema({
     space_description: {
         type: String
     },
-    virtual_video_url: {
-        type: String,
-    },
-    location: {
-        type: {
-            type: String,
-            default: 'Point',
-        },
-        coordinates: [Number], // [22.2475, 14.2547]  [longitude, latitude]
-    },
-    address: {
-        type: String
-    }
+    space_images: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'spacesImages',
+    }],
 });
 
 const ClientSpaces = mongoose.model("clientSpaces", clientSpaces);

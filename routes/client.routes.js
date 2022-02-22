@@ -6,6 +6,10 @@ const { authenticateToken } = require("../middlewares/auth");
 const router = express.Router();
 
 router.post("/register-client", clientController.registerClient);
+router.post("/login", clientController.login);
+router.post("/edit-client", authenticateToken, clientController.editClient);
+router.get("/get-client", authenticateToken, clientController.getClients);
+router.post("/change-client-status", authenticateToken, clientController.clientStatus)
 router.post("/add-place-address", authenticateToken, clientController.addPlaceAddress);
 
 // client type of places 
@@ -35,6 +39,24 @@ router.post("/remove-other-service-type", authenticateToken, clientController.re
 
 // client spaces 
 router.post("/add-spaces", authenticateToken, formidableMiddleware(), clientController.addClientSpaces);
+router.get("/get-spaces", authenticateToken, clientController.getClientSpaces);
+router.post("/edit-spaces", authenticateToken, formidableMiddleware(), clientController.addClientSpaces);
+router.post("/delete-spaces", authenticateToken, clientController.deleteClientSpace);
+router.post("/add-remove-client-images", authenticateToken, formidableMiddleware(), clientController.addRemoveClientImages);
+
+// client decorator 
+router.post("/add-client-decorator", authenticateToken, clientController.addClientDecorator);
+router.post("/edit-client-decorator", authenticateToken, clientController.editClientDecorator);
+router.post("/delete-client-decorator", authenticateToken, clientController.deleteClientDecorator);
+router.get("/get-client-decorator", authenticateToken, clientController.getClientDecorator);
+
+// client dj 
+router.post("/add-client-dj", authenticateToken, clientController.addClientDJ);
+router.post("/edit-client-dj", authenticateToken, clientController.editClientDJ);
+router.post("/delete-client-dj", authenticateToken, clientController.deleteClientDJ);
+router.get("/get-client-dj", authenticateToken, clientController.getClientDJ);
+
+
 
 
 module.exports = router;

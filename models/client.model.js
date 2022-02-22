@@ -27,6 +27,9 @@ const clientSchema = new Schema({
         minlength: 10,
         maxlength: 10
     },
+    status: {
+        type: Boolean
+    },
     max_capacity: {
         type: Number,
     },
@@ -56,6 +59,13 @@ const clientSchema = new Schema({
     allow_outside_decoration: {
         type: Boolean
     },
+    virtual_video_url: {
+        type: String
+    },
+    images: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'clientImages',
+    }],
     date: {
         type: Date,
         default: Date.now(),
