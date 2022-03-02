@@ -30,6 +30,9 @@ const userSchema = new Schema({
         },
         coordinates: [Number], // [22.2475, 14.2547]  [longitude, latitude]
     },
+    verified: {
+        type: Boolean
+    },
     token: {
         type: String,
         unique: true

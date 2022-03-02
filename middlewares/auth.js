@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Client = require('../models/client.model');
+const User = require('../models/user.model');
 
 async function authenticateToken(req, res, next) {
 
@@ -18,6 +19,23 @@ async function authenticateToken(req, res, next) {
         }).
     catch((error) => res.send(401))
 }
+async function userAuthenticateToken(req, res, next) {
+
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(" ")[1];
+    console.log(token);
+    if (token == null) return res.send(401);
+
+
+    const data = jwt.verify(token, "WAY_EASY_SECRET_KEY");
+    await User
+        .findOne({ owner_phonenumber: data.data })
+        .then((data) => {
+            req.authId = data.id;
+            next();
+        }).
+    catch((error) => res.send(401))
+}
 
 function generateAccessToken(ownerPhonenumber) {
     return jwt.sign({ data: ownerPhonenumber }, "WAY_EASY_SECRET_KEY", );
@@ -26,4 +44,5 @@ function generateAccessToken(ownerPhonenumber) {
 module.exports = {
     authenticateToken,
     generateAccessToken,
+    userAuthenticateToken
 }

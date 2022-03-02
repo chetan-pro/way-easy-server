@@ -1,7 +1,8 @@
 const User = require('../models/user.model');
 const OTP = require('../models/otp.model');
 const path = require('path')
-
+const Joi = require('joi');
+const { MongoClient, ObjectId } = require("mongodb");
 const bcrypt = require("bcryptjs");
 const auth = require("../middlewares/auth");
 const crypto = require("crypto");
@@ -13,10 +14,13 @@ require("dotenv").config();
 
 async function login({ mobileNumber, password }, callback) {
     const user = await User.findOne({ mobileNumber });
-    console.log(user);
     if (user) {
         if (bcrypt.compareSync(password, user.password)) {
-            return callback(null, {...user.toJSON() });
+            let obj = {
+                id: user.id,
+                token: user.token
+            }
+            return callback(null, obj);
         } else {
             return callback({
                 message: "Password is not matched",
@@ -28,6 +32,70 @@ async function login({ mobileNumber, password }, callback) {
         })
     }
 };
+
+async function register(params, callback) {
+    try {
+        console.log(params);
+        const owner_phonenumber = params.owner_phonenumber;
+        const user = await User.findOne({ owner_phonenumber });
+        if (user) {
+            return callback("User alreeady registered.");
+        } else {
+            console.log("join validation");
+            const reqObj = {
+                email: Joi.string().email().required(),
+                password: Joi.string().required(),
+                username: Joi.string().trim().max(50).required(),
+                mobile_number: Joi.string()
+                    .trim()
+                    .min(10)
+                    .max(10)
+                    .regex(/^[0-9]*$/)
+                    .required(),
+
+            }
+            const schema = Joi.object(reqObj)
+            const { error } = await schema.validate(params)
+            if (error) {
+                return callback(error);
+            } else {
+                const passwordHash = await bcrypt.hashSync(params.password, 10);
+                const userObj = {
+                    username: params.username,
+                    mobile_number: params.mobile_number,
+                    email: params.email,
+                    password: passwordHash,
+                    token: auth.generateAccessToken(params.owner_phonenumber),
+                    verified: false
+                }
+                await User.create(userObj)
+                    .then((data) => {
+                        return callback(null, data);
+                    })
+                    .catch((error) =>
+                        callback(null, error))
+            }
+        }
+    } catch (error) {
+        return callback(error);
+    }
+}
+
+async function getUserProfile(params, callback) {
+    try {
+        console.log(params);
+        User.findOne({ _id: params.authId }).then((data) => {
+                if (!data.verified) {
+                    return callback("You account is not verifed");
+                }
+                return callback(null, data);
+            })
+            .catch((error) =>
+                callback(null, error));
+    } catch (error) {
+        return callback(error);
+    }
+}
 
 async function saveAndEditProfile(params, image, callback) {
     const mobileNumber = params.mobile_number;
@@ -57,10 +125,8 @@ async function saveAndEditProfile(params, image, callback) {
 }
 
 async function createOtp(params, callback) {
-    params['token'] = auth.generateAccessToken(params.mobileNumber);
-    const user = new User(params);
-    user
-        .save()
+    User
+        .findOne({ mobile_number: params.mobile_number })
         .then((response) => {
             console.log("response");
             console.log(response);
@@ -102,24 +168,45 @@ async function createOtp(params, callback) {
 }
 
 async function verifyOTP(params, callback) {
-    let [hashValue, expires] = params.hash.split('.');
-
-    let now = Date.now();
-    if (now > parseInt(expires)) return callback("OTP Expired");
-
-    let data = `
-                                                $ { params.phone }.$ { params.otp }.$ { expires }
-                                                `;
-    let newCalculateHash = crypto.createHmac("sha256", "WAY_EASY_KEY").update(data).digest("hex");
-    if (newCalculateHash === hashValue) {
-        return callback(null, "Sucess");
+    const reqParam = params.body
+    const reqObj = {
+        mobile_number: Joi.string().email().required(),
+        otp: Joi.string().required(),
     }
-    return callback("Invalid OTP");
+    const schema = Joi.object(reqObj)
+    const { error } = await schema.validate(reqParam)
+    if (error) {
+        return callback(error);
+    } else {
+        OTP.findOne({ reqParam })
+            .then((data) => {
+                console.log(data.user);
+                if (data) {
+                    User.findOne({ _id: ObjectId(data.user_id) }).then((data) => {
+                        console.log(data);
+                        data.verified = true;
+                        const _id = data.id;
+                        User.findByIdAndUpdate(
+                            _id, {...data, _id }, { new: true }
+                        ).then((response) => {
+                            return callback(null, "Your account is verified");
+                        }).catch((error) => {
+                            return callback(error);
+                        })
+                    })
+                } else {
+                    return callback("Invalid OTP");
+                }
+            })
+            .catch((error) => callback(error));
+    }
 }
 
 module.exports = {
     login,
     saveAndEditProfile,
     createOtp,
-    verifyOTP
+    verifyOTP,
+    register,
+    getUserProfile
 }

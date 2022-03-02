@@ -18,8 +18,7 @@ exports.login = (req, res, next) => {
 }
 
 exports.registerClient = (req, res, next) => {
-    console.log(req.body);
-    console.log(req.fields);
+
     clientService.register(req.body, (error, result) => {
         if (error) {
             return next(error);

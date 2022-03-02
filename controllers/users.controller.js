@@ -33,13 +33,35 @@ exports.login = (req, res, next) => {
     });
 }
 
+exports.registerUser = (req, res, next) => {
+    console.log(req.body);
+    console.log(req.fields);
+    userService.register(req.fields, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+
 exports.userProfile = (req, res, next) => {
-    return res.status(200).json({ message: "Authorized User!" })
+    userService.getUserProfile(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
 }
 
 exports.otpLogin = (req, res, next) => {
-    console.log(req.body);
-    console.log("data here")
+
     userService.createOtp(req.body, (error, result) => {
         if (error) {
             return next(error);
