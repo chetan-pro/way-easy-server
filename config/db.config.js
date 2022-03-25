@@ -1,3 +1,7 @@
 module.exports = {
-    db: 'mongodb://localhost/way-easy'
-}
+    HOST: "localhost",
+    USER: "root",
+    PASSWORD: "",
+    DB: "way_easy",
+    dialect: "mysql",
+};

@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-const Client = require('../models/client.model');
-const User = require('../models/user.model');
+const { Client } = require('../models')
 
 async function authenticateToken(req, res, next) {
 
@@ -23,13 +22,13 @@ async function userAuthenticateToken(req, res, next) {
 
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(" ")[1];
-    console.log(token);
     if (token == null) return res.send(401);
 
 
     const data = jwt.verify(token, "WAY_EASY_SECRET_KEY");
+
     await User
-        .findOne({ owner_phonenumber: data.data })
+        .findOne({ mobile_phonenumber: data.data })
         .then((data) => {
             req.authId = data.id;
             next();

@@ -169,80 +169,27 @@ module.exports = {
             }
         });
     },
-    // FileUpload: (req, res, fileName) => {
-    //     console.log(req.files.file.path);
-    //     const oldPath = req.files.file.path;
-    //     const newPath = `${path.join(__dirname, '../public/assets/certificate')
-    // }/${fileName}`;
-    //     const rawData = fs.readFileSync(oldPath);
-    //     console.log(newPath);
-    //     // eslint-disable-next-line consistent-return
-    //     fs.writeFile(newPath, rawData, (err) => {
-    //         if (err) {
-    //             return Response.errorResponseData(res, res.__('somethingWentWrong'), 500);
-    //         }
-    //     });
-    // },
 
-    // ResumeUpload: (req, res, resumeName) => {
-    //     const oldPath = req.files.resume.path;
-    //     const newPath = `${path.join(__dirname, '../public/assets/resume')
-    // }/${resumeName}`;
-    //     const rawData = fs.readFileSync(oldPath);
-    //     console.log(newPath);
-    //     // eslint-disable-next-line consistent-return
-    //     fs.writeFile(newPath, rawData, (err) => {
-    //         if (err) {
-    //             return Response.errorResponseData(res, res.__('somethingWentWrong'), 500);
-    //         }
-    //     });
-    // },
+    CalculateDistance: (lat1, lat2, lon1, lon2) => {
+        console.log(lat1);
+        console.log(lat2);
+        console.log(lon1);
+        console.log(lon2);
 
-    // mediaUrl: (folder, name) => {
-    //     if (name && name !== '') {
-    //         return `${process.env.APP_URL}/${folder}/${name}`;
-    //     }
-    //     return '';
-    // },
+        //This function takes in latitude and longitude of two location and returns the distance between them as the crow flies (in km)
 
-    // pushNotification(notification, firebaseToken) {
-    //     const payload = {
-    //         android: {
-    //             data: {
-    //                 title: notification.title,
-    //                 body: notification.message,
-    //                 icon: 'ic_stat_ic_notification',
-    //                 color: '#36384C',
-    //                 tag: 'notify_type',
-    //                 click_action: 'myactivity',
-    //                 reward_text: '  ',
-    //                 qaash_text: ''
-    //             }
-    //         },
-    //         apns: {
-    //             payload: {
-    //                 aps: {
-    //                     'mutable-content': 1,
-    //                     alert: {
-    //                         title: notification.title,
-    //                         body: notification.message
-    //                     }
-    //                 },
-    //                 CustomData: {
-    //                     reward_text: '',
-    //                     qaash_text: ''
-    //                 }
-    //             }
-    //         },
-    //         tokens: firebaseToken
-    //     };
+        var R = 6371; // km
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var lat1 = (lat1) * Math.PI / 180;
+        var lat2 = (lat2) * Math.PI / 180;
 
-    //     firebase.messaging()
-    //         .sendMulticast(payload)
-    //         .then(() => true)
-    //         .catch((error) => {
-    //             console.log('Rider Error sending message: -> ', error);
-    //             return true;
-    //         });
-    // }
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c;
+        return d;
+    },
+    // Converts numeric degrees to radians
+
 }
