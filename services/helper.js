@@ -46,21 +46,21 @@ module.exports = {
     //     return key
     // },
     // /**
-    //  * @description This function use for create random number
-    //  * @param length
-    //  * @returns {*}
-    //  */
 
-    // makeRandomNumber: (length) => {
-    //     let result = ''
-    //     const characters =
-    //         '0123456789'
-    //     const charactersLength = characters.length
-    //     for (let i = 0; i < length; i++) {
-    //         result += characters.charAt(Math.floor(Math.random() * charactersLength))
-    //     }
-    //     return result
-    // },
+    makeRandomNumber: (length) => {
+        let result = ''
+        const characters =
+            '0123456789'
+        const charactersLength = characters.length
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength))
+        }
+        if (result > 100000) {
+            return result
+        } else {
+            this.makeRandomNumber(length);
+        }
+    },
     // generateMobileOtp: async function(len, mobile) {
     //     if (process.env.GENERATE_AND_SEND_OTP === 'true') {
     //         let text = ''

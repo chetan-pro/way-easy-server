@@ -11,8 +11,10 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-
-            // define association here
+            ClientOtherServices.hasOne(models.OtherServices, {
+                sourceKey: 'other_service_id',
+                foreignKey: 'id',
+            })
         }
     }
     ClientOtherServices.init({

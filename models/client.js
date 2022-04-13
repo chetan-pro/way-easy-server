@@ -10,7 +10,42 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
+            Client.hasMany(models.ClientImages, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasMany(models.ClientPartyType, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasMany(models.ClientFoodTypes, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasMany(models.ClientWeekDays, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasMany(models.ClientOtherServices, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasMany(models.ClientDJ, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasMany(models.ClientDecorator, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                }),
+                Client.hasOne(models.UserLiked, {
+                    sourceKey: 'id',
+                    foreignKey: 'client_id',
+                })
+            Client.hasMany(models.ClientSpace, {
+                sourceKey: 'id',
+                foreignKey: 'client_id',
+            })
         }
     }
     Client.init({
@@ -68,7 +103,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         timestamps: true,
         modelName: 'Client',
-        tableName: 'client',
+        tableName: 'clients',
         indexes: [{
                 unique: true,
                 fields: ['email', 'referrer_code'],

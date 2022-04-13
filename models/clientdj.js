@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
+            ClientDJ.hasOne(models.PrivacyType, {
+                sourceKey: 'privacy_type_id',
+                foreignKey: 'id',
+            })
         }
     }
     ClientDJ.init({

@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
     }
     PartyType.init({
         name: DataTypes.STRING,
-        description: DataTypes.STRING
+        description: DataTypes.STRING,
+        image_url: DataTypes.STRING
     }, {
         sequelize,
         modelName: 'PartyType',

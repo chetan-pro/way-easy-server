@@ -32,5 +32,10 @@ router.post("/add-type-of-spaces", staticDataController.addTypeOfSpaces);
 router.get("/get-privacy-type", staticDataController.getPrivacyType);
 router.post("/add-privacy-type", staticDataController.addPrivacyType);
 
+//Food Menu Categories
+router.get("/get-food-menu-categories", staticDataController.getFoodMenuCategories);
+router.post("/add-food-menu-categories", staticDataController.addFoodMenuCategories);
 
+
+module.exports = router;
 module.exports = router;

@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
+            ClientSpace.hasMany(models.SpaceImage, {
+                sourceKey: 'id',
+                foreignKey: 'client_space_id',
+            })
         }
     }
     ClientSpace.init({

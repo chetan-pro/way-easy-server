@@ -1,12 +1,10 @@
-// const TypeOfPlace = require('../models/type_of_place.model');
-// const TypeOfParty = require('../models/type_of_parties.model');
-// const OtherServices = require('../models/other_services.model');
 // const ObjDays = require('../models/obj_days.model');
-// const Joi = require('joi');
-// const FoodType = require('../models/food_type.model');
-// const PrivacyType = require('../models/privacy_type.model');
-// const TypeOfSpace = require('../models/type_of_spaces.model');
-// require("dotenv").config();
+const Joi = require('joi');
+
+require("dotenv").config();
+const { Sequelize } = require("sequelize");
+
+const { MenuFoodCategory, PartyType, PlaceType } = require('./../models')
 
 // async function addTypeOfPlace(params, callback) {
 //     console.log("params");
@@ -30,13 +28,27 @@
 //         });
 // }
 
-// async function getTypeOfPlace(params, callback) {
-//     await TypeOfPlace.find().then((response) => {
-//         return callback(null, response);
-//     }).catch((error) => {
-//         return callback(error);
-//     });
-// }
+async function getTypeOfPlace(params, callback) {
+    await PlaceType.findAll({
+        attributes: {
+            include: [
+                [
+                    Sequelize.literal(`(
+                        SELECT COUNT(*)
+                        FROM client_place_types AS clientPlaceType
+                        WHERE
+                        clientPlaceType.place_type_id = PlaceType.id 
+                    )`),
+                    'count'
+                ]
+            ],
+        },
+    }).then((response) => {
+        return callback(null, response);
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 
 // async function addTypeOfParties(params, callback) {
 //     console.log("params");
@@ -60,13 +72,13 @@
 //         });
 // }
 
-// async function getTypeOfParties(params, callback) {
-//     await TypeOfParty.find().then((response) => {
-//         return callback(null, response);
-//     }).catch((error) => {
-//         return callback(error);
-//     });
-// }
+async function getTypeOfParties(params, callback) {
+    await PartyType.findAll().then((response) => {
+        return callback(null, response);
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 
 // async function addOtherServices(params, callback) {
 //     console.log("params");
@@ -185,7 +197,35 @@
 //     }).catch((error) => {
 //         return callback(error);
 //     });
-// }
+
+
+async function addFoodMenuCategories(params, callback) {
+    console.log("params");
+    console.log(params);
+    const reqObj = {
+        category_name: Joi.string().required(),
+        category_description: Joi.string().required(),
+    }
+    const schema = Joi.object(reqObj)
+    const { error } = schema.validate(params)
+    if (error) {
+        return callback(error);
+    }
+    await MenuFoodCategory.create(params)
+        .then((response) => {
+            return callback(null, response);
+        }).catch((error) => {
+            return callback(error);
+        });
+}
+
+async function getFoodMenuCategories(params, callback) {
+    await MenuFoodCategory.findAll().then((response) => {
+        return callback(null, response);
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 
 // async function addTypeOfSpaces(params, callback) {
 //     console.log("params");
@@ -217,19 +257,19 @@
 //     });
 // }
 
-// module.exports = {
-//     addTypeOfPlace,
-//     getTypeOfPlace,
-//     addTypeOfParties,
-//     getTypeOfParties,
-//     addOtherServices,
-//     getOtherServices,
-//     addDays,
-//     getDays,
-//     addFoodType,
-//     getFoodType,
-//     addPrivacyType,
-//     getPrivacyType,
-//     addTypeOfSpaces,
-//     getTypeOfSpaces,
-// }
+module.exports = {
+    //     addTypeOfPlace,
+    getTypeOfPlace,
+    //     addTypeOfParties,
+    getTypeOfParties,
+    //     addOtherServices,
+    //     getOtherServices,
+    //     addDays,
+    //     getDays,
+    //     addFoodType,
+    //     getFoodType,
+    //     addPrivacyType,
+    //     getPrivacyType,
+    getFoodMenuCategories,
+    addFoodMenuCategories,
+}

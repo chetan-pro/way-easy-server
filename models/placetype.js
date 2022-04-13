@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
     }
     PlaceType.init({
         name: DataTypes.STRING,
-        description: DataTypes.STRING
+        description: DataTypes.STRING,
+        image_url: DataTypes.STRING
     }, {
         sequelize,
         modelName: 'PlaceType',

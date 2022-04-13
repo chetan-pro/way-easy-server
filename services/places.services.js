@@ -1,116 +1,205 @@
-// const Place = require('../models/place.model');
-// const Client = require('../models/client.model');
-// const Booking = require('../models/user_booking.model');
-// const User = require('../models/user.model');
-// const Helper = require('../services/helper');
-// const Joi = require('joi');
+const Helper = require('../services/helper');
+const Joi = require('joi');
+const { Op } = require('sequelize');
+const { DELETE } = require('./constant');
+require("dotenv").config();
+const { User, Client, UserLiked, Booking, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages } = require('../models');
 
-// require("dotenv").config();
+async function getPlaces(params, callback) {
+    const authId = params.authId;
+    console.log(authId);
+    console.log(params.params.id);
+    const user = await User.findOne({ _id: authId }, );
+    // console.log(user.location);
+    if (params.params.id) {
+        await Client.findAll({
+            where: {
+                status: {
+                    [Op.not]: DELETE,
+                },
+            },
+            include: [{
+                    model: ClientImages,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                },
+                {
+                    model: ClientPartyType,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                    include: {
+                        model: PartyType,
+                        attributes: ["id", "name"],
+                    },
+                },
+                {
+                    model: ClientFoodTypes,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                    include: {
+                        model: FoodType,
+                        attributes: ["id", "name"],
+                    },
+                },
+                {
+                    model: ClientWeekDays,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                    include: {
+                        model: WeekDays,
+                        attributes: ["id", "name"],
+                    },
+                },
+                {
+                    model: ClientOtherServices,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                    include: {
+                        model: OtherServices,
+                        attributes: ["id", "name"],
+                    },
+                },
+                {
+                    model: ClientDJ,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                },
+                {
+                    model: ClientDecorator,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                },
+                {
+                    model: UserLiked,
+                    where: {
+                        user_id: authId
+                    },
+                    required: false
+                },
+                {
+                    model: ClientSpace,
+                    client_id: {
+                        [Op.eq]: ['id'],
+                    },
+                    include: [{
+                        model: SpaceImage,
+                        client_space_id: {
+                            [Op.eq]: ['id'],
+                        }
+                    }]
+                },
+            ]
+        }).then((response) => {
 
-// async function getPlaces(params, callback) {
-//     const authId = params.authId;
-//     console.log(authId);
-//     console.log(params.params.id);
-//     const user = await User.findOne({ _id: authId }, );
-//     // console.log(user.location);
-//     if (params.params.id) {
-//         await Client.aggregate([{
-//                 "$lookup": {
-//                     "from": "clientfoodtypes",
-//                     "let": { "clientId": "$_id" },
-//                     "pipeline": [
-//                         { "$match": { "$expr": { "$eq": ["$client_id", "$$clientId"] } } },
-//                         {
-//                             "$lookup": {
-//                                 "from": "foodtypes",
-//                                 "let": { "foodId": "$food_id" },
-//                                 "pipeline": [
-//                                     { "$match": { "$expr": { "$eq": ["$_id", "$$foodId"] } } }
-//                                 ],
-//                                 "as": "foodType"
-//                             }
-//                         },
-//                         { "$unwind": "$foodType" }
-//                     ],
-//                     "as": "clientFoodType"
-//                 }
-//             },
-//             { "$unwind": "$clientFoodType" },
-//             {
-//                 "$lookup": {
-//                     "from": "clientimages",
-//                     "localField": "images",
-//                     "foreignField": "_id",
-//                     "as": "clientimages"
-//                 }
-//             }
-//         ]).then((response) => {
-//             // response._doc.distance = Helper.CalculateDistance(response.location.coordinates[0],
-//             //     user.location.coordinates[0], response.location.coordinates[1], user.location.coordinates[1]);
-//             return callback(null, response)
-//         }).catch((error) => {
-//             return callback(error)
-//         })
-//     } else {
-//         await Client.find({}, ).populate('images').then((response) => {
-//             response.forEach((key) => {
-//                 key._doc.distance = Helper.CalculateDistance(key.location.coordinates[0],
-//                     user.location.coordinates[0], key.location.coordinates[1], user.location.coordinates[1]);
-//             })
-//             return callback(null, response)
-//         }).catch((error) => {
-//             return callback(error)
-//         })
-//     }
-// }
+            return callback(null, response)
+        }).catch((error) => {
+            return callback(error)
+        })
+    } else {
+        await Client.findAll({
+            where: {
+                status: {
+                    [Op.not]: DELETE,
+                },
+            },
+            include: [{
+                model: ClientImages,
+                client_id: {
+                    [Op.eq]: ['id'],
+                }
+            }, ]
+        }).then((response) => {
 
-// async function bookPlace(params, callback) {
-//     try {
-//         const body = params.body;
-//         const reqObj = {
-//             client_id: Joi.string().required(),
-//             date: Joi.date().required(),
-//             from_timing: Joi.date().timestamp(),
-//             to_timing: Joi.date().timestamp(),
-//             no_of_people: Joi.number().required(),
-//             ocassion_id: Joi.string().required(),
-//             party_space_type_id: Joi.string().optional(),
-//             dj_id: Joi.string().optional(),
-//             decorator_id: Joi.string().optional(),
-//         }
-//         const schema = Joi.object(reqObj)
-//         const { error } = await schema.validate(params.body)
-//         if (error) {
-//             return callback(error);
-//         } else {
-//             const bookingObj = {
-//                 user_id: params.authId,
-//                 client_id: body.client_id,
-//                 date: body.date,
-//                 from_timing: body.from_timing,
-//                 to_timing: body.to_timing,
-//                 no_of_people: body.no_of_people,
-//                 ocassion_id: body.ocassion_id,
-//                 party_space_type_id: body.party_space_type_id,
-//                 dj_id: body.dj_id,
-//                 decorator_id: body.decorator_id,
-//             }
-//             await Booking.create(bookingObj)
-//                 .then((data) =>
-//                     callback(null, data))
-//                 .catch((error) =>
-//                     callback(null, error))
+            return callback(null, response)
+        }).catch((error) => {
+            return callback(error)
+        })
+    }
+}
 
-//         }
-//     } catch (error) {
-//         return callback(error);
-//     }
+async function bookPlace(params, callback) {
+    try {
+        const body = params.body;
+        const reqObj = {
+            client_id: Joi.number().required(),
+            party_type_id: Joi.number().optional(),
+            date_of_party: Joi.date().required(),
+            from_timing_of_party: Joi.string(),
+            to_timing_of_party: Joi.string(),
+            num_of_people: Joi.number().required(),
+            space_id: Joi.number().required(),
+            client_dj_id: Joi.number().optional(),
+            client_decorator_id: Joi.number().optional(),
+            booking_charge: Joi.number().optional(),
+        }
+        const schema = Joi.object(reqObj)
+        const { error } = schema.validate(body)
+        if (error) {
+            return callback(error);
+        } else {
+            body['user_id'] = params.authId;
+            body['status_client'] = 'PENDING';
+            body['status_user'] = 'REQUEST';
+            body['total_charge'] = body.booking_charge;
+            await Booking.create(body)
+                .then((data) =>
+                    callback(null, data))
+                .catch((error) =>
+                    callback(null, error))
 
-// }
+        }
+    } catch (error) {
+        return callback(error);
+    }
+
+}
+
+async function likeUnlike(params, callback) {
+    console.log(params.body);
+    const reqParam = params.body;
+    const
+        authUserId = params.authId;
+    const likeObj = {
+        client_id: reqParam.client_id,
+        user_id: authUserId,
+    }
+    const data = await UserLiked.findOne({
+        where: {
+            client_id: reqParam.client_id,
+            user_id: authUserId
+        }
+    }).then(jobdata => jobdata)
+
+    if (!data) {
+        await UserLiked.create(likeObj)
+            .then(async(result) => {
+                callback(null, 'liked place')
+            })
+            .catch(async(e) => {
+                callback('internal error');
+            })
+    } else {
+        await UserLiked.destroy({ where: { client_id: reqParam.client_id, user_id: authUserId } })
+            .then(() => {
+                callback(null, 'liked Place Deleted');
+            })
+            .catch((e) => {
+                callback('something went wrong');
+            })
+
+    }
+};
 
 
-
-// module.exports = {
-//     getPlaces,
-//     bookPlace
-// }
+module.exports = {
+    getPlaces,
+    bookPlace,
+    likeUnlike
+}

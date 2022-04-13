@@ -56,7 +56,12 @@ router.post("/edit-client-dj", authenticateToken, clientController.editClientDJ)
 router.post("/delete-client-dj", authenticateToken, clientController.deleteClientDJ);
 router.get("/get-client-dj", authenticateToken, clientController.getClientDJ);
 
-
+// client food menu
+router.post("/add-menu-food", authenticateToken, clientController.addMenuFood);
+router.get("/get-all-menu-food", authenticateToken, clientController.getAllMenuFood);
+router.get("/get-categories-menu-food", authenticateToken, clientController.getCategoriesMenuFood);
+router.delete("/delete-menu-food", authenticateToken, clientController.deleteMenuFood);
+router.post("/update-menu-food", authenticateToken, clientController.updateMenuFood);
 
 
 module.exports = router;

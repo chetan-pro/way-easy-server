@@ -156,3 +156,26 @@ exports.getPrivacyType = (req, res, next) => {
         });
     });
 }
+
+exports.addFoodMenuCategories = (req, res, next) => {
+    staticDataServices.addFoodMenuCategories(req.body, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.getFoodMenuCategories = (req, res, next) => {
+    staticDataServices.getFoodMenuCategories(req.body, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}

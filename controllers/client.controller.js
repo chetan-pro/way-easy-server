@@ -2,11 +2,7 @@ const clientService = require("../services/client.services");
 
 
 exports.login = (req, res, next) => {
-    const { owner_number, password } = req.body;
-    clientService.login({
-        owner_number,
-        password
-    }, (error, result) => {
+    clientService.login(req, (error, result) => {
         if (error) {
             return next(error);
         }
@@ -398,6 +394,66 @@ exports.editClientDecorator = (req, res, next) => {
 }
 exports.deleteClientDecorator = (req, res, next) => {
     clientService.deleteClientDecorator(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.addMenuFood = (req, res, next) => {
+    clientService.addMenuFood(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.getAllMenuFood = (req, res, next) => {
+    clientService.getAllMenuFood(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.getCategoriesMenuFood = (req, res, next) => {
+    clientService.getCategoriesMenuFood(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.deleteMenuFood = (req, res, next) => {
+    clientService.deleteMenuFood(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.updateMenuFood = (req, res, next) => {
+    clientService.updateMenuFood(req, (error, result) => {
         if (error) {
             return next(error);
         }
