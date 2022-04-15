@@ -3,7 +3,7 @@ const Joi = require('joi');
 const { Op } = require('sequelize');
 const { DELETE } = require('./constant');
 require("dotenv").config();
-const { User, Client, UserLiked, Booking, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages } = require('../models');
+const { User, Client, UserLiked, UserReviews, Booking, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages } = require('../models');
 
 async function getPlaces(params, callback) {
     const authId = params.authId;
@@ -12,8 +12,11 @@ async function getPlaces(params, callback) {
     const user = await User.findOne({ _id: authId }, );
     // console.log(user.location);
     if (params.params.id) {
-        await Client.findAll({
+        await Client.findOne({
             where: {
+                id: {
+                    [Op.eq]: params.params.id,
+                },
                 status: {
                     [Op.not]: DELETE,
                 },
@@ -84,6 +87,10 @@ async function getPlaces(params, callback) {
                     required: false
                 },
                 {
+                    model: UserReviews,
+                    required: false
+                },
+                {
                     model: ClientSpace,
                     client_id: {
                         [Op.eq]: ['id'],
@@ -116,8 +123,7 @@ async function getPlaces(params, callback) {
                 }
             }, ]
         }).then((response) => {
-
-            return callback(null, response)
+            return callback(null, { rows: response })
         }).catch((error) => {
             return callback(error)
         })
@@ -161,6 +167,74 @@ async function bookPlace(params, callback) {
 
 }
 
+async function addRateReview(params, callback) {
+
+    const requestParam = params.body;
+
+    const
+        authUserId = params.authId;
+
+
+
+
+    const reqObj = {
+        star: Joi.number().required(),
+        client_id: Joi.number().required(),
+        comment: Joi.string().optional(),
+    };
+
+    const schema = Joi.object(reqObj);
+    const { error } = schema.validate(requestParam);
+    if (error) {
+
+        console.log(error);
+        return callback("Rate Service Request Validation");
+    } else {
+        if (requestParam.star && requestParam.star !== "") {
+            const rateReviewObj = {
+                user_id: authUserId,
+                client_id: requestParam.client_id,
+                star: requestParam.star,
+                comment: requestParam.comment,
+            };
+
+            await UserReviews.findOne({
+                    where: {
+                        user_id: authUserId,
+                        client_id: requestParam.client_id,
+
+                    }
+                })
+                .then(async ratingsFound => {
+
+                    if (ratingsFound) {
+                        return callback(null, "Rating Already Exists");
+
+                    } else {
+                        await await UserReviews
+                            .create(rateReviewObj)
+                            .then(async result => {
+                                return callback(null, "Rating Added Successfully")
+
+                            })
+                            .catch(e => {
+                                console.log(e);
+                                return callback("something Went Wrong");
+
+                            });
+                    }
+                })
+                .catch((e) => {
+                    console.log(e);
+                    return callback("something Went Wrong");
+                })
+        }
+    }
+
+
+};
+
+
 async function likeUnlike(params, callback) {
     console.log(params.body);
     const reqParam = params.body;
@@ -201,5 +275,6 @@ async function likeUnlike(params, callback) {
 module.exports = {
     getPlaces,
     bookPlace,
-    likeUnlike
+    likeUnlike,
+    addRateReview
 }

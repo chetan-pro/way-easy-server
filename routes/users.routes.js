@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 
 router.post("/save-and-edit-profile",
-    formidableMiddleware(), userController.saveAndEditProfile);
+    formidableMiddleware(), userAuthenticateToken, userController.saveAndEditProfile);
 router.post("/register",
     formidableMiddleware(), userController.registerUser);
 router.post("/login", userController.login);

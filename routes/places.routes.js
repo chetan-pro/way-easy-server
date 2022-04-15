@@ -11,6 +11,7 @@ router.get("/get-place/:id", userAuthenticateToken, placeController.getPlaces);
 router.post("/book-place", userAuthenticateToken, placeController.bookPlace);
 
 router.post("/place-like-unlike", userAuthenticateToken, placeController.likeUnlike);
+router.post("/place-rate-review", userAuthenticateToken, placeController.addRateReview);
 
 
 module.exports = router;

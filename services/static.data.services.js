@@ -44,7 +44,7 @@ async function getTypeOfPlace(params, callback) {
             ],
         },
     }).then((response) => {
-        return callback(null, response);
+        return callback(null, { rows: response });
     }).catch((error) => {
         return callback(error);
     });

@@ -154,8 +154,9 @@ async function getUserProfile(params, callback) {
 }
 
 async function saveAndEditProfile(params, image, callback) {
-    console.log(params);
-    if (_id && image && image.size > 0) {
+    let reqBody = params.fields;
+    console.log(params.authId);
+    if (image && image.size > 0) {
         console.log("i am in");
         const extension = image.type;
         const imageExtArr = ['image/jpg', 'application/octet-stream', 'image/jpeg', 'image/png'];
@@ -165,18 +166,21 @@ async function saveAndEditProfile(params, image, callback) {
         const imageName = image ? `${moment().unix()}${path.extname(image.name)}` : '';
         if (image) {
             await Helper.ImageUpload(image, imageName);
-            params['image'] = imageName;
+            reqBody['image'] = imageName;
         }
-    } else {
-        return callback("User not exist");
     }
-    await User.findByIdAndUpdate(
-        _id, {...params, _id }, { new: true }
-    ).then((response) => {
-        return callback(null, response);
-    }).catch((error) => {
-        return callback(error);
-    })
+    await User.update(reqBody, {
+            where: { id: params.authId },
+        })
+        .then((response) => {
+            User.findByPk(
+                params.authId
+            ).then((userData) => {
+                return callback(null, userData);
+            }).catch((e) => callback(e));
+        }).catch((error) => {
+            return callback(error);
+        })
 }
 
 

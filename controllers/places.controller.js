@@ -35,3 +35,15 @@ exports.likeUnlike = (req, res, next) => {
         })
     })
 }
+
+exports.addRateReview = (req, res, next) => {
+    placesService.addRateReview(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}

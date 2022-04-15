@@ -42,6 +42,10 @@ module.exports = (sequelize, DataTypes) => {
                     sourceKey: 'id',
                     foreignKey: 'client_id',
                 })
+            Client.hasMany(models.UserReviews, {
+                sourceKey: 'id',
+                foreignKey: 'client_id',
+            })
             Client.hasMany(models.ClientSpace, {
                 sourceKey: 'id',
                 foreignKey: 'client_id',

@@ -2,8 +2,7 @@ const bcryptjs = require('bcryptjs');
 const userService = require("../services/users.services");
 
 exports.saveAndEditProfile = (req, res, next) => {
-    console.log(req.body);
-    console.log(req.fields);
+
     userService.saveAndEditProfile(req, req.files.image, (error, result) => {
         if (error) {
             return next(error);
