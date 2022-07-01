@@ -315,6 +315,18 @@ exports.addRemoveClientImages = (req, res, next) => {
         });
     });
 }
+
+exports.getClientImages = (req, res, next) => {
+    clientService.getClientImages(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
 exports.addClientDJ = (req, res, next) => {
     clientService.addClientDJ(req, (error, result) => {
         if (error) {
@@ -454,6 +466,29 @@ exports.deleteMenuFood = (req, res, next) => {
 
 exports.updateMenuFood = (req, res, next) => {
     clientService.updateMenuFood(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.getAllBookings = (req, res, next) => {
+    clientService.getAllBookings(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+exports.getOrderedFood = (req, res, next) => {
+    clientService.getOrderedFood(req, (error, result) => {
         if (error) {
             return next(error);
         }

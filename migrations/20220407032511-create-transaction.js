@@ -11,7 +11,7 @@ module.exports = {
             user_id: {
                 type: Sequelize.INTEGER,
             },
-            booking_id: {
+            client_id: {
                 type: Sequelize.INTEGER,
             },
             total_billing_amount: {
@@ -21,7 +21,13 @@ module.exports = {
                 type: Sequelize.STRING,
                 comment: 'SUCCESS,FAILED,PENDING'
             },
-            transaction_id: {
+            order_id: {
+                type: Sequelize.STRING,
+            },
+            payment_id: {
+                type: Sequelize.STRING,
+            },
+            message: {
                 type: Sequelize.STRING,
             },
             signature_id: {

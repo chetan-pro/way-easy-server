@@ -1,10 +1,19 @@
 const Helper = require('../services/helper');
 const Joi = require('joi');
 const { Op } = require('sequelize');
+const sequelize = require("sequelize");
+const Razorpay = require("razorpay");
+
+
 const { DELETE } = require('./constant');
 require("dotenv").config();
-const { User, Client, UserLiked, UserReviews, Booking, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages } = require('../models');
+const { User, Client, UserLiked, UserReviews, Booking, OrderFood, MenuFoodCategory, MenuFood, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages, Transaction } = require('../models');
 
+
+var instance = new Razorpay({
+    key_id: process.env.KEY_ID,
+    key_secret: process.env.SECRET_KEY,
+});
 async function getPlaces(params, callback) {
     const authId = params.authId;
     console.log(authId);
@@ -130,35 +139,205 @@ async function getPlaces(params, callback) {
     }
 }
 
+async function getLikedPlaces(params, callback) {
+    const authId = params.authId;
+    await Client.findAll({
+        where: {
+            status: {
+                [Op.not]: DELETE,
+            },
+        },
+        include: [{
+                model: ClientImages,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+            },
+            {
+                model: ClientPartyType,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+                include: {
+                    model: PartyType,
+                    attributes: ["id", "name"],
+                },
+            },
+            {
+                model: ClientFoodTypes,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+                include: {
+                    model: FoodType,
+                    attributes: ["id", "name"],
+                },
+            },
+            {
+                model: ClientWeekDays,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+                include: {
+                    model: WeekDays,
+                    attributes: ["id", "name"],
+                },
+            },
+            {
+                model: ClientOtherServices,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+                include: {
+                    model: OtherServices,
+                    attributes: ["id", "name"],
+                },
+            },
+            {
+                model: ClientDJ,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+            },
+            {
+                model: ClientDecorator,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+            },
+            {
+                model: UserLiked,
+                where: {
+                    user_id: authId
+                },
+                required: true
+            },
+            {
+                model: UserReviews,
+                required: false
+            },
+            {
+                model: ClientSpace,
+                client_id: {
+                    [Op.eq]: ['id'],
+                },
+                include: [{
+                    model: SpaceImage,
+                    client_space_id: {
+                        [Op.eq]: ['id'],
+                    }
+                }]
+            },
+        ]
+    }).then((response) => {
+        return callback(null, { rows: response })
+    }).catch((error) => {
+        return callback(error)
+    })
+}
+
+
+
+
+async function createBookingOrder(params, callback) {
+    const requestParams = params.body;
+    const { authId } = params;
+    const reqObj = {
+        booking_charge: Joi.number().required(),
+        client_id: Joi.number().required(),
+    };
+    const schema = Joi.object(reqObj);
+    const { error } = await schema.validate(requestParams);
+    if (error) {
+        return callback(error);
+    } else {
+        var options = {
+            currency: "INR",
+            receipt: 'rec1',
+            amount: requestParams.booking_charge * 100
+        }
+        await instance.orders.create(options, async function(err, order) {
+            if (err) {
+                console.log(err);
+                return callback(err);
+            } else {
+                let orderObj = {
+                    order_id: order.id,
+                    total_billing_amount: requestParams.booking_charge,
+                    client_id: requestParams.client_id,
+                    payment_status: 'PENDING',
+                    user_id: authId
+                };
+                console.log(orderObj);
+                Transaction.create(orderObj).then((response) => {
+                    return callback(null, response);
+                }).catch((error) => {
+                    return callback(error);
+                })
+            }
+        });
+    }
+}
+
+
 async function bookPlace(params, callback) {
     try {
         const body = params.body;
         const reqObj = {
             client_id: Joi.number().required(),
             party_type_id: Joi.number().optional(),
-            date_of_party: Joi.date().required(),
-            from_timing_of_party: Joi.string(),
-            to_timing_of_party: Joi.string(),
-            num_of_people: Joi.number().required(),
-            space_id: Joi.number().required(),
+            date_of_party: Joi.date().optional(),
+            from_timing_of_party: Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/),
+            to_timing_of_party: Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/),
+            num_of_people: Joi.number().optional(),
+            space_id: Joi.number().optional(),
             client_dj_id: Joi.number().optional(),
             client_decorator_id: Joi.number().optional(),
             booking_charge: Joi.number().optional(),
+            order_id: Joi.string().required(),
+            txn_id: Joi.number().required(),
+            transaction_id: Joi.string().optional(),
+            signature_id: Joi.string().optional(),
+            payment_status: Joi.string()
+                .required()
+                .valid(
+                    'SUCCESS', 'FAILED', 'PENDING'
+                )
         }
-        const schema = Joi.object(reqObj)
-        const { error } = schema.validate(body)
+        const schema = Joi.object(reqObj);
+        const { error } = schema.validate(body);
         if (error) {
             return callback(error);
         } else {
+            if (body.payment_status === 'FAILED') {
+                console.log("body.txn_id");
+                console.log(body.txn_id);
+                await Transaction.update(body, {
+                    where: { id: body.txn_id }
+                }).catch((error) => {
+                    return callback(error);
+                });
+                return callback({ message: "Booking Failed" });
+            }
             body['user_id'] = params.authId;
-            body['status_client'] = 'PENDING';
+            body['status_client'] = 'ACCEPT';
             body['status_user'] = 'REQUEST';
             body['total_charge'] = body.booking_charge;
+            body['message'] = "Booking is confirmed";
+
             await Booking.create(body)
                 .then((data) =>
                     callback(null, data))
                 .catch((error) =>
-                    callback(null, error))
+                    callback(null, error));
+            await Transaction.update(body, {
+                    where: { id: body.txn_id }
+                })
+                .then((data) =>
+                    callback(null, body))
+                .catch((error) =>
+                    callback(null, error));
+
 
         }
     } catch (error) {
@@ -167,15 +346,23 @@ async function bookPlace(params, callback) {
 
 }
 
+async function userBooking(params, callback) {
+    const userId = params.authId;
+    await Booking.findAll({
+        where: {
+            user_id: userId
+        }
+    }).then((response) => {
+        callback(null, response);
+    }).catch((e) => callback(e));
+
+}
+
 async function addRateReview(params, callback) {
 
     const requestParam = params.body;
 
-    const
-        authUserId = params.authId;
-
-
-
+    const authUserId = params.authId;
 
     const reqObj = {
         star: Joi.number().required(),
@@ -187,8 +374,7 @@ async function addRateReview(params, callback) {
     const { error } = schema.validate(requestParam);
     if (error) {
 
-        console.log(error);
-        return callback("Rate Service Request Validation");
+        return callback(error);
     } else {
         if (requestParam.star && requestParam.star !== "") {
             const rateReviewObj = {
@@ -202,25 +388,20 @@ async function addRateReview(params, callback) {
                     where: {
                         user_id: authUserId,
                         client_id: requestParam.client_id,
-
                     }
                 })
                 .then(async ratingsFound => {
-
                     if (ratingsFound) {
-                        return callback(null, "Rating Already Exists");
-
+                        return callback(null, "Rating is already added");
                     } else {
                         await await UserReviews
                             .create(rateReviewObj)
                             .then(async result => {
                                 return callback(null, "Rating Added Successfully")
-
                             })
                             .catch(e => {
                                 console.log(e);
                                 return callback("something Went Wrong");
-
                             });
                     }
                 })
@@ -271,10 +452,62 @@ async function likeUnlike(params, callback) {
     }
 };
 
+async function getPlaceMenu(params, callback) {
+    const clientId = params.params.id;
+    await MenuFoodCategory.findAll({
+            include: [{
+                model: MenuFood,
+                where: {
+                    client_id: clientId
+                },
+            }, ]
+        })
+        .then((response) => {
+            return callback(null, response);
+        }).catch((error) => {
+            return callback(error);
+        });
+
+}
+
+async function orderFood(params, callback) {
+    try {
+        const body = params.body;
+        const reqObj = {
+            order_id: Joi.number().optional(),
+            food_id: Joi.number().optional(),
+            quantity: Joi.number().optional(),
+        }
+        const schema = Joi.object(reqObj)
+        const { error } = schema.validate(body);
+        if (error) {
+            return callback(error);
+        } else {
+            await OrderFood.create(body)
+                .then((data) =>
+                    callback(null, data))
+                .catch((error) =>
+                    callback(error))
+
+        }
+    } catch (error) {
+        return callback(error);
+    }
+
+
+}
+
+
+
 
 module.exports = {
     getPlaces,
+    getLikedPlaces,
+    createBookingOrder,
     bookPlace,
+    userBooking,
     likeUnlike,
-    addRateReview
+    addRateReview,
+    getPlaceMenu,
+    orderFood
 }

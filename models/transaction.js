@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id',
             },
         },
-        booking_id: {
+        client_id: {
             type: DataTypes.INTEGER,
             references: {
                 model: 'Booking',
@@ -35,10 +35,16 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             comment: 'SUCCESS,FAILED,PENDING'
         },
-        transaction_id: {
+        order_id: {
+            type: DataTypes.STRING,
+        },
+        payment_id: {
             type: DataTypes.STRING,
         },
         signature_id: {
+            type: DataTypes.STRING,
+        },
+        message: {
             type: DataTypes.STRING,
         },
     }, {

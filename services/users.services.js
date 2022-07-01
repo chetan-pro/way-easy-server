@@ -18,6 +18,8 @@ async function login(params, callback) {
         where: {
             phonenumber: params.mobile_number
         }
+    }).catch((error) => {
+        callback(error);
     });
     if (user) {
         if (bcrypt.compareSync(params.password, user.password)) {
@@ -127,10 +129,72 @@ async function register(params, callback) {
     }
 }
 
+async function forgetPassword(params, callback) {
+    const reqParam = params.body
+    console.log(reqParam);
+    const reqObj = {
+        mobile: Joi.string().required(),
+        otp: Joi.string().required(),
+        password: Joi.string().required(),
+        confirm_password: Joi.any().valid(Joi.ref('password')).required(),
+    }
+    const schema = Joi.object(reqObj)
+    const { error } = await schema.validate(reqParam)
+    if (error) {
+        return callback('resetPasswordValidation', error);
+
+    } else {
+        const isOtpExist = await OTP.findOne({
+            where: {
+                otp: reqParam.otp,
+                mobile: reqParam.mobile,
+                otp_expiry: {
+                    [Op.gte]: moment()
+                }
+
+            },
+        }).then((isOtpExistData) => isOtpExistData)
+        console.log("moment date :: ", moment().format(), ":::: otp time : ", isOtpExist);
+        if (isOtpExist) {
+            const userEmailExist = await User.findOne({
+                where: {
+                    phonenumber: reqParam.mobile,
+                    status: {
+                        [Op.not]: DELETE,
+                    },
+                },
+            }).then((userEmailData) => userEmailData)
+            if (userEmailExist) {
+                const passwordHash = await bcrypt.hashSync(reqParam.password, 10);
+                await User.update({ password: passwordHash }, {
+                    where: {
+                        id: userEmailExist.id,
+                        status: ACTIVE
+                    },
+                }).then(async(result) => {
+                    if (result) {
+                        console.log(result)
+                        return callback(null, 'resetPasswordSuccess');
+                    }
+                }).catch(() => {
+                    return callback('somethingWentWrong');
+                })
+            } else {
+                return callback('mobilenoNotExist');
+            }
+        } else {
+            return callback('invalidOtp');
+        }
+    }
+
+};
+
+
 
 async function getUserProfile(params, callback) {
+    console.log("params");
+    console.log(params);
     try {
-        console.log(params);
         User.findOne({
                 where: {
                     id: params.authId,
@@ -166,7 +230,7 @@ async function saveAndEditProfile(params, image, callback) {
         const imageName = image ? `${moment().unix()}${path.extname(image.name)}` : '';
         if (image) {
             await Helper.ImageUpload(image, imageName);
-            reqBody['image'] = imageName;
+            reqBody['image_url'] = imageName;
         }
     }
     await User.update(reqBody, {
@@ -184,7 +248,7 @@ async function saveAndEditProfile(params, image, callback) {
 }
 
 
-async function resendOTP(params, image, callback) {
+async function resendOTP(params, callback) {
     const reqParam = params.body
     const reqObj = {
         mobile_number: Joi.string()
@@ -228,7 +292,7 @@ async function resendOTP(params, image, callback) {
                         const userData = await User.findByPk(isUserExist.id)
                         var options = {
                             authorization: `${process.env.fast2SmsApiKey}`,
-                            message: `Your sign up otp is ${otpData.otp}`,
+                            message: `Your otp is ${otpData.otp} . Team Way-Easy `,
                             numbers: [userData.phonenumber]
                         }
                         console.log(options);
@@ -308,11 +372,53 @@ async function verifyOTP(params, callback) {
     }
 }
 
+async function changePassword(params, callback) {
+    const reqParam = params.body;
+    const authId = params.authId;
+    const reqObj = {
+        previous_password: Joi.string().required(),
+        password: Joi.string().required(),
+        confirm_password: Joi.string().required().valid(Joi.ref('password')).required(),
+    }
+    const schema = Joi.object(reqObj)
+    const { error } = await schema.validate(reqParam)
+    if (error) {
+        return callback(error);
+    } else {
+        let userData = await User.findByPk(authId);
+        if (!userData) {
+            return callback("No User Found ");
+        } else {
+            bcrypt.compare(
+                reqParam.previous_password,
+                userData.password,
+                async(err, result) => {
+                    if (err) {
+                        return next(err);
+                    }
+                    if (result) {
+                        const passwordHash = await bcrypt.hashSync(reqParam.password, 10);
+                        await userData.update({
+                            password: passwordHash
+                        });
+                        return callback(null, 'Password Updated Successfully.');
+                    } else {
+                        return callback("Please enter a correct password.");
+                    }
+                }
+            )
+        }
+    }
+};
+
+
 module.exports = {
     login,
     saveAndEditProfile,
     resendOTP,
     verifyOTP,
+    forgetPassword,
     register,
-    getUserProfile
+    getUserProfile,
+    changePassword
 }

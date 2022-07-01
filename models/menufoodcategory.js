@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            MenuFoodCategory.hasMany(models.MenuFood, {
+                sourceKey: 'id',
+                foreignKey: 'menu_food_category_id',
+            })
         }
     }
     MenuFoodCategory.init({

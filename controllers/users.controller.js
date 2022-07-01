@@ -43,6 +43,31 @@ exports.registerUser = (req, res, next) => {
     });
 }
 
+exports.forgetPassword = (req, res, next) => {
+
+    userService.forgetPassword(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.changePassword = (req, res, next) => {
+    userService.changePassword(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
 
 exports.userProfile = (req, res, next) => {
     userService.getUserProfile(req, (error, result) => {

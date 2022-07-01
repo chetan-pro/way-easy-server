@@ -6,7 +6,7 @@ const { Op } = require('sequelize');
 const Helper = require('../services/helper');
 const auth = require('../middlewares/auth');
 const bcrypt = require("bcryptjs");
-const { Client, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages, MenuFood } = require('../models');
+const { Client, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages, MenuFood, MenuFoodCategory, Booking, User, OrderFood } = require('../models');
 const { DELETE } = require('./constant');
 
 require("dotenv").config();
@@ -506,6 +506,7 @@ async function removeClientTypeOfFood(params, callback) {
 
 async function addClientTypeOfFood(params, callback) {
     try {
+
         const clientId = params.authId;
         console.log("clientId mili");
         console.log(clientId);
@@ -984,7 +985,6 @@ async function addClientSpaces(params, images, callback) {
                         params['image'] = imageName;
                         let newImagesUpload = new SpaceImage({ client_space_id: response.id, image_url: imageName });
                         return newImagesUpload.save().then((res) => {
-
                             return res;
                         }).catch((error) => {
                             return callback(error);
@@ -1154,6 +1154,24 @@ async function addRemoveClientImages(params, images, callback) {
         return callback(error);
     }
 }
+async function getClientImages(params, callback) {
+    try {
+        const clientId = params.authId;
+        await ClientImages.findAll({
+                where: {
+                    client_id: clientId
+                },
+            })
+            .then((response) => {
+                return callback(null, response);
+            }).catch((error) => {
+                return callback(error);
+            });
+
+    } catch (error) {
+        return callback(error);
+    }
+}
 
 
 async function addMenuFood(params, callback) {
@@ -1183,10 +1201,13 @@ async function addMenuFood(params, callback) {
 }
 async function getAllMenuFood(params, callback) {
     const clientId = params.authId;
-    await MenuFood.findAll({
-            where: {
-                client_id: clientId
-            }
+    await MenuFoodCategory.findAll({
+            include: [{
+                model: MenuFood,
+                where: {
+                    client_id: clientId
+                },
+            }, ]
         })
         .then((response) => {
             return callback(null, response);
@@ -1195,9 +1216,143 @@ async function getAllMenuFood(params, callback) {
         });
 
 }
-async function getCategoriesMenuFood(params, callback) {}
-async function deleteMenuFood(params, callback) {}
-async function updateMenuFood(params, callback) {}
+async function getCategoriesMenuFood(params, callback) {
+    await MenuFoodCategory.findAll()
+        .then((response) => {
+            return callback(null, response);
+        }).catch((error) => {
+            return callback(error);
+        });
+
+}
+async function deleteMenuFood(params, callback) {
+    try {
+        const reqObj = {
+            menu_food_id: Joi.string().required(),
+        }
+        const schema = Joi.object(reqObj)
+        const { error } = schema.validate(params.body);
+        if (error) {
+            return callback(error);
+        }
+        await MenuFood.destroy({
+            where: {
+                id: params.body.menu_food_id
+            }
+        }).then((response) => {
+            return callback(null, response);
+        }).catch((error) => {
+            return callback(error);
+        })
+    } catch (error) {
+        return callback(error);
+    }
+}
+async function updateMenuFood(params, callback) {
+
+}
+
+async function getAllBookings(params, callback) {
+    const orderId = params.query.id;
+    if (orderId) {
+        await Booking.findOne({
+
+                where: {
+                    client_id: params.authId,
+                    id: orderId
+                },
+                include: [{
+                        model: User,
+                        id: {
+                            [Op.eq]: ['user_id'],
+                        },
+                        attributes: ['id', 'name'],
+                    },
+                    {
+                        model: PartyType,
+                        id: {
+                            [Op.eq]: ['party_type_id'],
+                        },
+                        attributes: ['id', 'name'],
+
+                    },
+                    {
+                        model: ClientDJ,
+                        id: {
+                            [Op.eq]: ['client_dj_id'],
+                        },
+                    },
+                    {
+                        model: ClientDecorator,
+                        id: {
+                            [Op.eq]: ['client_decorator_id'],
+                        },
+                    },
+                    {
+                        model: ClientSpace,
+                        id: {
+                            [Op.eq]: ['space_id'],
+                        },
+                    },
+                ]
+            })
+            .then((response) => {
+                return callback(null, response);
+            }).catch((error) => {
+                return callback(error);
+            });
+    } else {
+
+        await Booking.findAll({
+                where: {
+                    client_id: params.authId
+                },
+                include: [{
+                        model: User,
+                        id: {
+                            [Op.eq]: ['user_id'],
+                        },
+                        attributes: ['id', 'name'],
+                    },
+                    {
+                        model: PartyType,
+                        id: {
+                            [Op.eq]: ['party_type_id'],
+                        },
+                        attributes: ['id', 'name'],
+
+                    },
+                ]
+            })
+            .then((response) => {
+                return callback(null, response);
+            }).catch((error) => {
+                return callback(error);
+            });
+    }
+}
+
+
+async function getOrderedFood(params, callback) {
+    const clientId = params.authId;
+    const orderId = params.params.id;
+    await OrderFood.findAll({
+            where: {
+                order_id: orderId
+            },
+            include: [{
+                model: MenuFood,
+                id: {
+                    [Op.eq]: ['food_id'],
+                },
+            }]
+        })
+        .then((response) => {
+            return callback(null, response);
+        }).catch((error) => {
+            return callback(error);
+        });
+}
 
 
 module.exports = {
@@ -1235,9 +1390,12 @@ module.exports = {
     deleteClientDJ,
     getClientDJ,
     addRemoveClientImages,
+    getClientImages,
     addMenuFood,
     getAllMenuFood,
     getCategoriesMenuFood,
     deleteMenuFood,
     updateMenuFood,
+    getAllBookings,
+    getOrderedFood
 }

@@ -14,17 +14,20 @@ module.exports = {
             client_id: {
                 type: Sequelize.INTEGER,
             },
+            txn_id: {
+                type: Sequelize.INTEGER,
+            },
             party_type_id: {
                 type: Sequelize.INTEGER,
             },
-            data_of_party: {
+            date_of_party: {
                 type: Sequelize.DATE
             },
             from_timing_of_party: {
-                type: Sequelize.DATE
+                type: Sequelize.TIME
             },
             to_timing_of_party: {
-                type: Sequelize.DATE
+                type: Sequelize.TIME
             },
             status_client: {
                 type: Sequelize.STRING,

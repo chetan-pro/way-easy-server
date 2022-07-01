@@ -10,13 +10,16 @@ async function authenticateToken(req, res, next) {
 
 
     const data = jwt.verify(token, "WAY_EASY_SECRET_KEY");
+    console.log("data.data");
+    console.log(data.data);
     await Client
-        .findOne({ owner_phonenumber: data.data })
+        .findOne({
+            where: { owner_phonenumber: data.data }
+        })
         .then((data) => {
             req.authId = data.id;
             next();
-        }).
-    catch((error) => res.send(401))
+        }).catch((error) => res.send(401))
 }
 async function userAuthenticateToken(req, res, next) {
 
@@ -28,12 +31,14 @@ async function userAuthenticateToken(req, res, next) {
     const data = jwt.verify(token, "WAY_EASY_SECRET_KEY");
 
     await User
-        .findOne({ mobile_phonenumber: data.data })
+        .findOne({
+            where: { phonenumber: data.data }
+        })
         .then((data) => {
+            console.log(data.id);
             req.authId = data.id;
             next();
-        }).
-    catch((error) => res.send(401))
+        }).catch((error) => res.send(401))
 }
 
 function generateAccessToken(ownerPhonenumber) {

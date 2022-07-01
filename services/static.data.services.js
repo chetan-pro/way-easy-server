@@ -4,7 +4,8 @@ const Joi = require('joi');
 require("dotenv").config();
 const { Sequelize } = require("sequelize");
 
-const { MenuFoodCategory, PartyType, PlaceType } = require('./../models')
+const { MenuFoodCategory, PartyType, PlaceType, WeekDays, FoodType, OtherServices, PrivacyType } = require('./../models');
+
 
 // async function addTypeOfPlace(params, callback) {
 //     console.log("params");
@@ -74,7 +75,7 @@ async function getTypeOfPlace(params, callback) {
 
 async function getTypeOfParties(params, callback) {
     await PartyType.findAll().then((response) => {
-        return callback(null, response);
+        return callback(null, { rows: response });
     }).catch((error) => {
         return callback(error);
     });
@@ -102,13 +103,13 @@ async function getTypeOfParties(params, callback) {
 //         });
 // }
 
-// async function getOtherServices(params, callback) {
-//     await OtherServices.find().then((response) => {
-//         return callback(null, response);
-//     }).catch((error) => {
-//         return callback(error);
-//     });
-// }
+async function getOtherServices(params, callback) {
+    await OtherServices.findAll().then((response) => {
+        return callback(null, { rows: response });
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 // async function addDays(params, callback) {
 //     console.log("params");
 //     console.log(params);
@@ -131,13 +132,13 @@ async function getTypeOfParties(params, callback) {
 //         });
 // }
 
-// async function getDays(params, callback) {
-//     await ObjDays.find().then((response) => {
-//         return callback(null, response);
-//     }).catch((error) => {
-//         return callback(error);
-//     });
-// }
+async function getDays(params, callback) {
+    await WeekDays.findAll().then((response) => {
+        return callback(null, { rows: response });
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 
 // async function addFoodType(params, callback) {
 //     console.log("params");
@@ -161,13 +162,13 @@ async function getTypeOfParties(params, callback) {
 //         });
 // }
 
-// async function getFoodType(params, callback) {
-//     await FoodType.find().then((response) => {
-//         return callback(null, response);
-//     }).catch((error) => {
-//         return callback(error);
-//     });
-// }
+async function getFoodType(params, callback) {
+    await FoodType.findAll().then((response) => {
+        return callback(null, { rows: response });
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 
 // async function addPrivacyType(params, callback) {
 //     console.log("params");
@@ -191,12 +192,13 @@ async function getTypeOfParties(params, callback) {
 //         });
 // }
 
-// async function getPrivacyType(params, callback) {
-//     await PrivacyType.find().then((response) => {
-//         return callback(null, response);
-//     }).catch((error) => {
-//         return callback(error);
-//     });
+async function getPrivacyType(params, callback) {
+    await PrivacyType.findAll().then((response) => {
+        return callback(null, { rows: response });
+    }).catch((error) => {
+        return callback(error);
+    });
+}
 
 
 async function addFoodMenuCategories(params, callback) {
@@ -221,7 +223,7 @@ async function addFoodMenuCategories(params, callback) {
 
 async function getFoodMenuCategories(params, callback) {
     await MenuFoodCategory.findAll().then((response) => {
-        return callback(null, response);
+        return callback(null, { rows: response });
     }).catch((error) => {
         return callback(error);
     });
@@ -263,13 +265,13 @@ module.exports = {
     //     addTypeOfParties,
     getTypeOfParties,
     //     addOtherServices,
-    //     getOtherServices,
+    getOtherServices,
     //     addDays,
-    //     getDays,
-    //     addFoodType,
-    //     getFoodType,
+    getDays,
+    // addFoodType,
+    getFoodType,
     //     addPrivacyType,
-    //     getPrivacyType,
+    getPrivacyType,
     getFoodMenuCategories,
     addFoodMenuCategories,
 }

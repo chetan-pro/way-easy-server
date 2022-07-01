@@ -9,6 +9,7 @@ router.post("/register-client", clientController.registerClient);
 router.post("/login", clientController.login);
 router.post("/edit-client", authenticateToken, clientController.editClient);
 router.get("/get-client", authenticateToken, clientController.getClients);
+router.get("/admin-get-client", clientController.getClients);
 router.post("/change-client-status", authenticateToken, clientController.clientStatus)
 router.post("/add-place-address", authenticateToken, clientController.addPlaceAddress);
 
@@ -43,6 +44,7 @@ router.get("/get-spaces", authenticateToken, clientController.getClientSpaces);
 router.post("/edit-spaces", authenticateToken, formidableMiddleware(), clientController.addClientSpaces);
 router.post("/delete-spaces", authenticateToken, clientController.deleteClientSpace);
 router.post("/add-remove-client-images", authenticateToken, formidableMiddleware(), clientController.addRemoveClientImages);
+router.get("/get-client-images", authenticateToken, clientController.getClientImages);
 
 // client decorator 
 router.post("/add-client-decorator", authenticateToken, clientController.addClientDecorator);
@@ -59,9 +61,12 @@ router.get("/get-client-dj", authenticateToken, clientController.getClientDJ);
 // client food menu
 router.post("/add-menu-food", authenticateToken, clientController.addMenuFood);
 router.get("/get-all-menu-food", authenticateToken, clientController.getAllMenuFood);
-router.get("/get-categories-menu-food", authenticateToken, clientController.getCategoriesMenuFood);
+router.get("/get-categories-menu-food", clientController.getCategoriesMenuFood);
 router.delete("/delete-menu-food", authenticateToken, clientController.deleteMenuFood);
 router.post("/update-menu-food", authenticateToken, clientController.updateMenuFood);
+
+router.get('/get-all-bookings', authenticateToken, clientController.getAllBookings);
+router.get('/get-ordered-food/:id', authenticateToken, clientController.getOrderedFood);
 
 
 module.exports = router;

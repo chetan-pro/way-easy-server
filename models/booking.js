@@ -11,8 +11,32 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            Booking.hasOne(models.User, {
+                    sourceKey: 'user_id',
+                    foreignKey: 'id',
+                }),
+                Booking.hasOne(models.PartyType, {
+                    sourceKey: 'party_type_id',
+                    foreignKey: 'id',
+                }),
+                Booking.hasOne(models.ClientDJ, {
+                    sourceKey: 'client_dj_id',
+                    foreignKey: 'id',
+                }),
+                Booking.hasOne(models.ClientDecorator, {
+                    sourceKey: 'client_decorator_id',
+                    foreignKey: 'id',
+                }),
+                Booking.hasOne(models.ClientSpace, {
+                    sourceKey: 'space_id',
+                    foreignKey: 'id',
+                })
+            Booking.hasOne(models.Transaction, {
+                sourceKey: 'txn_id',
+                foreignKey: 'id',
+            })
         }
-    }
+    };
     Booking.init({
         user_id: {
             type: DataTypes.INTEGER,
@@ -28,6 +52,13 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id',
             },
         },
+        txn_id: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'Transaction',
+                key: 'id',
+            },
+        },
         party_type_id: {
             type: DataTypes.INTEGER,
             references: {
@@ -35,14 +66,14 @@ module.exports = (sequelize, DataTypes) => {
                 key: 'id',
             },
         },
-        data_of_party: {
+        date_of_party: {
             type: DataTypes.DATE
         },
         from_timing_of_party: {
-            type: DataTypes.DATE
+            type: DataTypes.TIME
         },
         to_timing_of_party: {
-            type: DataTypes.DATE
+            type: DataTypes.TIME
         },
         status_client: {
             type: DataTypes.STRING,
