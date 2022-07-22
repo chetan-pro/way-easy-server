@@ -54,6 +54,20 @@ exports.getClients = (req, res, next) => {
     });
 }
 
+exports.clientDetails = (req, res, next) => {
+    console.log(req.body);
+    console.log(req.fields);
+    clientService.clientDetails(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
 exports.clientStatus = (req, res, next) => {
     clientService.clientStatus(req, (error, result) => {
         if (error) {

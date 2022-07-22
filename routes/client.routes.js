@@ -9,6 +9,7 @@ router.post("/register-client", clientController.registerClient);
 router.post("/login", clientController.login);
 router.post("/edit-client", authenticateToken, clientController.editClient);
 router.get("/get-client", authenticateToken, clientController.getClients);
+router.get("/client-details", authenticateToken, clientController.clientDetails);
 router.get("/admin-get-client", clientController.getClients);
 router.post("/change-client-status", authenticateToken, clientController.clientStatus)
 router.post("/add-place-address", authenticateToken, clientController.addPlaceAddress);

@@ -7,6 +7,7 @@
         "start": "node ./bin/www"
     },
     "dependencies": {
+        "@maplibre/maplibre-gl-geocoder": "^1.4.0",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.19.1",
         "cookie-parser": "~1.4.4",
@@ -24,6 +25,8 @@
         "http-errors": "~1.6.3",
         "joi": "^17.5.0",
         "jsonwebtoken": "^8.5.1",
+        "maplibre-gl": "^1.15.3",
+        "maplibre-gl-js-amplify": "^2.0.2",
         "moment": "^2.29.1",
         "mongoose": "^6.0.13",
         "mongoose-unique-validator": "^3.0.0",

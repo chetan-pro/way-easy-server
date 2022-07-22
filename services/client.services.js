@@ -244,6 +244,24 @@ async function getClients(params, callback) {
     }
 }
 
+async function clientDetails(params, callback) {
+    const clientId = params.authId;
+    await Client.findOne({
+        where: {
+            id: clientId,
+            status: {
+                [Op.not]: DELETE,
+            },
+        },
+    }).then((response) => {
+        console.log(response);
+        return callback(null, response)
+    }).catch((error) => {
+        return callback(error)
+    })
+
+}
+
 async function clientStatus(params, callback) {
     const reqObj = {
         status: Joi.bool().required(),
@@ -1360,6 +1378,7 @@ module.exports = {
     clientEditProfile,
     login,
     getClients,
+    clientDetails,
     clientStatus,
     addPlaceAddress,
     addClientTypeOfPlace,
