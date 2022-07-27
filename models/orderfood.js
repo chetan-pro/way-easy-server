@@ -12,9 +12,13 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             OrderFood.hasOne(models.MenuFood, {
-                sourceKey: 'food_id',
-                foreignKey: 'id',
-            })
+                    sourceKey: 'food_id',
+                    foreignKey: 'id',
+                })
+                // OrderFood.hasOne(models.Booking, {
+                //     sourceKey: 'order_id',
+                //     foreignKey: 'id',
+                // })
         }
     }
     OrderFood.init({

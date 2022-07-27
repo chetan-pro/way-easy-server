@@ -70,4 +70,13 @@ router.get('/get-all-bookings', authenticateToken, clientController.getAllBookin
 router.get('/get-ordered-food/:id', authenticateToken, clientController.getOrderedFood);
 
 
+router.post('/request-changes', authenticateToken, clientController.requestChanges);
+
+router.get("/get-booking-dashboard-details", authenticateToken, clientController.getBookingDashboardDetails);
+router.get("/get-ongoing-parties", authenticateToken, clientController.getOnGoingParties);
+router.post("/end-ongoing-party", authenticateToken, clientController.endOnGoingParty);
+router.get("/get-booking-details/:id", authenticateToken, clientController.getBookingDetails);
+
+router.post("/add-offline-booking", authenticateToken, clientController.addOfflineBooking);
+
 module.exports = router;

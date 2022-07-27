@@ -1,7 +1,7 @@
 const Helper = require('../services/helper');
 const Joi = require('joi');
 const { Op } = require('sequelize');
-const sequelize = require("sequelize");
+const Sequelize = require("sequelize");
 const Razorpay = require("razorpay");
 
 
@@ -246,6 +246,8 @@ async function createBookingOrder(params, callback) {
         booking_charge: Joi.number().required(),
         client_id: Joi.number().required(),
     };
+    console.log("::::::::::::requestParams:::::::::::");
+    console.log(requestParams);
     const schema = Joi.object(reqObj);
     const { error } = await schema.validate(requestParams);
     if (error) {
@@ -303,10 +305,15 @@ async function bookPlace(params, callback) {
                 .valid(
                     'SUCCESS', 'FAILED', 'PENDING'
                 )
+
         }
         const schema = Joi.object(reqObj);
+        console.log(":::::::::body:::::::");
+        console.log(body);
         const { error } = schema.validate(body);
         if (error) {
+            console.log(":::::::::joi error:::::::");
+            console.log(":::::::::joi error:::::::", error);
             return callback(error);
         } else {
             if (body.payment_status === 'FAILED') {
@@ -319,6 +326,8 @@ async function bookPlace(params, callback) {
                 });
                 return callback({ message: "Booking Failed" });
             }
+            console.log(":::::::::Success:::::::");
+
             body['user_id'] = params.authId;
             body['status_client'] = 'ACCEPT';
             body['status_user'] = 'REQUEST';
@@ -326,21 +335,28 @@ async function bookPlace(params, callback) {
             body['message'] = "Booking is confirmed";
 
             await Booking.create(body)
-                .then((data) =>
-                    callback(null, data))
-                .catch((error) =>
-                    callback(null, error));
-            await Transaction.update(body, {
-                    where: { id: body.txn_id }
+                .then(async(bookingData) => {
+                    console.log(":::::::::create:::::::");
+                    await Transaction.update(body, {
+                            where: { id: body.txn_id }
+                        })
+                        .then((data) =>
+                            callback(null, bookingData))
+                        .catch((error) =>
+                            callback(error))
                 })
-                .then((data) =>
-                    callback(null, body))
-                .catch((error) =>
-                    callback(null, error));
+                .catch((error) => {
+                    console.log("error")
+                    console.log(error);
+                    callback(error)
+                });
+
 
 
         }
     } catch (error) {
+        console.log("::::::::::error:::::::::::::");
+        console.log(error);
         return callback(error);
     }
 
@@ -500,6 +516,7 @@ async function orderFood(params, callback) {
 
 
 
+
 module.exports = {
     getPlaces,
     getLikedPlaces,
@@ -509,5 +526,6 @@ module.exports = {
     likeUnlike,
     addRateReview,
     getPlaceMenu,
-    orderFood
+    orderFood,
+
 }

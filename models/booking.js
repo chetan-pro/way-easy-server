@@ -11,8 +11,16 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            Booking.hasOne(models.User, {
+            Booking.hasMany(models.OrderFood, {
+                    sourceKey: 'id',
+                    foreignKey: 'order_id',
+                }),
+                Booking.hasOne(models.User, {
                     sourceKey: 'user_id',
+                    foreignKey: 'id',
+                }),
+                Booking.hasOne(models.Client, {
+                    sourceKey: 'client_id',
                     foreignKey: 'id',
                 }),
                 Booking.hasOne(models.PartyType, {
@@ -44,6 +52,12 @@ module.exports = (sequelize, DataTypes) => {
                 model: 'User',
                 key: 'id',
             },
+        },
+        user_name: {
+            type: DataTypes.STRING,
+        },
+        user_phone_number: {
+            type: DataTypes.INTEGER,
         },
         client_id: {
             type: DataTypes.INTEGER,
@@ -77,11 +91,14 @@ module.exports = (sequelize, DataTypes) => {
         },
         status_client: {
             type: DataTypes.STRING,
-            comment: 'ACCEPT,REJECT,PENDING'
+            comment: 'ACCEPT,REJECT,PENDING,COMPLETED'
+        },
+        booking_type: {
+            type: DataTypes.STRING,
         },
         status_user: {
             type: DataTypes.STRING,
-            comment: 'REQUEST,CANCEL'
+            comment: 'REQUEST,CANCEL,OVER'
         },
         space_id: {
             type: DataTypes.INTEGER,

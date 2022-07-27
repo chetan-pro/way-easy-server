@@ -204,5 +204,9 @@ module.exports = {
         SUNDAY: 'SU'
     },
     GlOBAL_IMAGE_PATH: '/assets/images/user',
-    GlOBAL_CERTIFICATE_PATH: '/assets/certificate'
+    GlOBAL_CERTIFICATE_PATH: '/assets/certificate',
+    ONLINE: 'online',
+    OFFLINE: 'offline',
+    COMPLETED: 'COMPLETED',
+    OVER: 'OVER',
 }

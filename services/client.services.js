@@ -1,13 +1,14 @@
 const Joi = require('joi');
 const moment = require('moment');
 const path = require('path')
-const { Op } = require('sequelize');
+const { Op, } = require('sequelize');
+const Sequelize = require('sequelize');
 
 const Helper = require('../services/helper');
 const auth = require('../middlewares/auth');
 const bcrypt = require("bcryptjs");
-const { Client, ClientPlaceType, PlaceType, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages, MenuFood, MenuFoodCategory, Booking, User, OrderFood } = require('../models');
-const { DELETE } = require('./constant');
+const { Client, ClientPlaceType, PlaceType, RequestChanges, ClientPartyType, PartyType, ClientFoodTypes, FoodType, ClientWeekDays, WeekDays, ClientOtherServices, OtherServices, ClientDJ, PrivacyType, ClientDecorator, ClientSpace, SpaceImage, ClientImages, MenuFood, MenuFoodCategory, Booking, User, Transaction, OrderFood } = require('../models');
+const { DELETE, OFFLINE, OVER, COMPLETED } = require('./constant');
 
 require("dotenv").config();
 async function login(
@@ -1372,6 +1373,150 @@ async function getOrderedFood(params, callback) {
         });
 }
 
+async function requestChanges(params, callback) {
+    const reqParam = params.body
+    const reqObj = {
+        category_name: Joi.string().required(),
+        comment: Joi.string().required(),
+        field_name: Joi.string().required()
+    }
+    const schema = Joi.object(reqObj)
+    const { error } = schema.validate(reqParam)
+    if (error) {
+        console.log(error)
+        return callback(error);
+    } else {
+        await RequestChanges.create(reqParam)
+            .then((response) => {
+                return callback(null, response);
+            }).catch((error) => {
+                return callback(error);
+            });
+    }
+}
+
+
+async function getBookingDashboardDetails(params, callback) {
+    let dashBoardData = {};
+    dashBoardData.totalBookings = await Booking.count({ where: { client_id: params.authId } });
+    dashBoardData.monthlyBookings = await Booking.count({ where: { client_id: params.authId, date_of_party: { $gte: Sequelize.literal('NOW() - INTERVAL \'30d\'') }, } });
+    dashBoardData.upcomingBookings = await Booking.count({ where: { client_id: params.authId, date_of_party: { $gte: Sequelize.literal('NOW()') }, } });
+    dashBoardData.weeklyBookings = await Booking.count({ where: { client_id: params.authId, date_of_party: { $gte: Sequelize.literal('NOW() - INTERVAL \'7d\'') }, } });
+    dashBoardData.bookings = await Booking.findAll({ where: { client_id: params.authId }, include: [{ model: User, attributes: ['id', 'name', 'phonenumber'] }, { model: PartyType, attributes: ['id', 'name'] }, ], attributes: ["id", "date_of_party", "from_timing_of_party", "to_timing_of_party", "user_id", "party_type_id", "booking_type", "user_name", "user_phone_number"] });
+
+    return callback(null, dashBoardData);
+}
+
+async function getBookingDetails(params, callback) {
+    await Booking.findOne({
+        where: { id: params.params.id, client_id: params.authId },
+        include: [{ model: User, attributes: ['id', 'name', "phonenumber"], required: false }, { model: PartyType, attributes: ['id', 'name'], required: false }, { model: ClientDJ, required: false }, { model: Transaction, required: false }, { model: ClientSpace, required: false }, { model: ClientDecorator, required: false }, ],
+        attributes: ["id", "date_of_party", "from_timing_of_party", "to_timing_of_party", "user_id", "party_type_id", "booking_type", "user_name", "user_phone_number"]
+    }).then((data) => callback(null, data)).catch((e) => callback(e));
+}
+
+
+
+async function addOfflineBooking(params, callback) {
+
+    try {
+        const body = params.body;
+        const reqObj = {
+            client_id: Joi.number().required(),
+            party_type_id: Joi.number().optional(),
+            date_of_party: Joi.date().optional(),
+            from_timing_of_party: Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/),
+            to_timing_of_party: Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/),
+            num_of_people: Joi.number().optional(),
+            space_id: Joi.number().optional(),
+            client_dj_id: Joi.number().optional(),
+            client_decorator_id: Joi.number().optional(),
+            user_name: Joi.string().optional(),
+            user_phone_number: Joi.string().optional()
+        }
+        const schema = Joi.object(reqObj);
+        const { error } = schema.validate(body);
+        if (error) {
+            return callback(error);
+        } else {
+            body['status_client'] = 'ACCEPT';
+            body['status_user'] = 'REQUEST';
+            body['booking_type'] = OFFLINE;
+            await Booking.create(body)
+                .then(async(bookingData) =>
+                    callback(null, bookingData))
+                .catch((error) => {
+                    console.log("error")
+                    console.log(error);
+                    callback(error)
+                });
+        }
+    } catch (error) {
+        console.log("::::::::::error:::::::::::::");
+        console.log(error);
+        return callback(error);
+    }
+
+}
+
+async function getOnGoingParties(params, callback) {
+    var now = new Date();
+    var day = ("0" + now.getDate()).slice(-2);
+    var month = ("0" + (now.getMonth() + 1)).slice(-2);
+    var today = now.getFullYear() + "-" + (month) + "-" + (day);
+
+    console.log(today);
+    let where = {
+        client_id: params.authId,
+        date_of_party: new Date(today),
+        from_timing_of_party: {
+            [Op.lt]: moment().format('HH:mm')
+        },
+        to_timing_of_party: {
+            [Op.gt]: moment().format('HH:mm')
+        }
+    }
+    let include = [{ model: User, attributes: ['id', 'name', "phonenumber"], required: false }, { model: PartyType, attributes: ['id', 'name'], required: false }, { model: OrderFood, required: false, include: [{ model: MenuFood }] }, { model: ClientDJ, required: false }, { model: Transaction, required: false }, { model: ClientSpace, required: false }, { model: ClientDecorator, required: false }, ];
+    let attributes = ["id", "date_of_party", "from_timing_of_party", "to_timing_of_party", "user_id", "party_type_id", "booking_type", "user_name", "user_phone_number"];
+    await Booking.findAll({
+        where,
+        include,
+        attributes
+    }).then((data) => callback(null, data)).catch((e) => callback(e));
+}
+
+async function endOnGoingParty(params, callback) {
+    try {
+        const body = params.body;
+        const reqObj = {
+            food_charge: Joi.number().required(),
+            total_charge: Joi.number().required(),
+            booking_id: Joi.number().required()
+        }
+        const schema = Joi.object(reqObj);
+        const { error } = schema.validate(body);
+        if (error) {
+            return callback(error);
+        } else {
+            body['status_client'] = COMPLETED;
+            body['status_user'] = OVER;
+            await Booking.update(body, { where: { id: body.booking_id } })
+                .then(async(bookingData) =>
+                    callback(null, bookingData))
+                .catch((error) => {
+                    console.log("error")
+                    console.log(error);
+                    callback(error)
+                });
+        }
+    } catch (error) {
+        console.log("::::::::::error:::::::::::::");
+        console.log(error);
+        return callback(error);
+    }
+
+
+}
 
 module.exports = {
     register,
@@ -1416,5 +1561,11 @@ module.exports = {
     deleteMenuFood,
     updateMenuFood,
     getAllBookings,
-    getOrderedFood
+    getOrderedFood,
+    requestChanges,
+    getBookingDashboardDetails,
+    getBookingDetails,
+    addOfflineBooking,
+    getOnGoingParties,
+    endOnGoingParty
 }

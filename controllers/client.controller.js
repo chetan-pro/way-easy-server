@@ -512,3 +512,75 @@ exports.getOrderedFood = (req, res, next) => {
         });
     });
 }
+
+exports.requestChanges = (req, res, next) => {
+    clientService.requestChanges(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        });
+    });
+}
+
+exports.getBookingDashboardDetails = (req, res, next) => {
+    clientService.getBookingDashboardDetails(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}
+
+exports.getOnGoingParties = (req, res, next) => {
+    clientService.getOnGoingParties(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}
+
+exports.endOnGoingParty = (req, res, next) => {
+    clientService.endOnGoingParty(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}
+
+exports.getBookingDetails = (req, res, next) => {
+    clientService.getBookingDetails(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}
+
+exports.addOfflineBooking = (req, res, next) => {
+    clientService.addOfflineBooking(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}

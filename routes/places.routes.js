@@ -21,4 +21,6 @@ router.post("/place-rate-review", userAuthenticateToken, placeController.addRate
 router.get("/get-place-menu/:id", userAuthenticateToken, placeController.getPlaceMenu);
 router.post("/order-food", userAuthenticateToken, placeController.orderFood);
 
+
+
 module.exports = router;

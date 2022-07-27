@@ -11,6 +11,12 @@ module.exports = {
             user_id: {
                 type: Sequelize.INTEGER,
             },
+            user_name: {
+                type: Sequelize.STRING,
+            },
+            user_phone_number: {
+                type: Sequelize.INTEGER,
+            },
             client_id: {
                 type: Sequelize.INTEGER,
             },
@@ -22,6 +28,9 @@ module.exports = {
             },
             date_of_party: {
                 type: Sequelize.DATE
+            },
+            booking_type: {
+                type: Sequelize.STRING,
             },
             from_timing_of_party: {
                 type: Sequelize.TIME
