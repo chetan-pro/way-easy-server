@@ -289,8 +289,8 @@ async function bookPlace(params, callback) {
             client_id: Joi.number().required(),
             party_type_id: Joi.number().optional(),
             date_of_party: Joi.date().optional(),
-            from_timing_of_party: Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/),
-            to_timing_of_party: Joi.string().regex(/^([0-9]{2})\:([0-9]{2})$/),
+            from_timing_of_party: Joi.string(),
+            to_timing_of_party: Joi.string(),
             num_of_people: Joi.number().optional(),
             space_id: Joi.number().optional(),
             client_dj_id: Joi.number().optional(),
@@ -479,7 +479,7 @@ async function getPlaceMenu(params, callback) {
             }, ]
         })
         .then((response) => {
-            return callback(null, response);
+            return callback(null, { data: response });
         }).catch((error) => {
             return callback(error);
         });
@@ -491,21 +491,53 @@ async function orderFood(params, callback) {
         const body = params.body;
         const reqObj = {
             order_id: Joi.number().optional(),
-            food_id: Joi.number().optional(),
-            quantity: Joi.number().optional(),
+            food_id: Joi.string().optional(),
+            quantity: Joi.string().optional(),
         }
         const schema = Joi.object(reqObj)
         const { error } = schema.validate(body);
         if (error) {
             return callback(error);
         } else {
-            await OrderFood.create(body)
-                .then((data) =>
-                    callback(null, data))
-                .catch((error) =>
-                    callback(error))
+            let foodIds = params.body.food_id.split(',');
+            let quantities = params.body.quantity.split(',');
+            foodIds.forEach(async(element, index) => {
+                let obj = {
+                    order_id: body.order_id,
+                    food_id: foodIds[index],
+                    quantity: quantities[index],
+                }
+                await OrderFood.create(obj)
+                    .then((data) =>
+                        data)
+                    .catch((error) =>
+                        callback(error))
+            });
+            callback(null, 'Food Order Successfully')
 
         }
+    } catch (error) {
+        return callback(error);
+    }
+
+
+}
+
+async function getOrderFood(params, callback) {
+    try {
+        const orderId = params.query.order_id;
+        let options = {
+            where: {
+                order_id: orderId,
+            },
+            include: [{ model: MenuFood }]
+        }
+        await OrderFood.findAll(options)
+            .then((data) =>
+                callback(null, { data: data }))
+            .catch((error) =>
+                callback(error))
+
     } catch (error) {
         return callback(error);
     }
@@ -527,5 +559,6 @@ module.exports = {
     addRateReview,
     getPlaceMenu,
     orderFood,
+    getOrderFood
 
 }

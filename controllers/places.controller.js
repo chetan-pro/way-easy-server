@@ -107,3 +107,15 @@ exports.orderFood = (req, res, next) => {
         })
     })
 }
+
+exports.getOrderFood = (req, res, next) => {
+    placesService.getOrderFood(req, (error, result) => {
+        if (error) {
+            return next(error);
+        }
+        return res.status(200).send({
+            message: "Success",
+            data: result
+        })
+    })
+}

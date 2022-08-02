@@ -1411,7 +1411,7 @@ async function getBookingDetails(params, callback) {
     await Booking.findOne({
         where: { id: params.params.id, client_id: params.authId },
         include: [{ model: User, attributes: ['id', 'name', "phonenumber"], required: false }, { model: PartyType, attributes: ['id', 'name'], required: false }, { model: ClientDJ, required: false }, { model: Transaction, required: false }, { model: ClientSpace, required: false }, { model: ClientDecorator, required: false }, ],
-        attributes: ["id", "date_of_party", "from_timing_of_party", "to_timing_of_party", "user_id", "party_type_id", "booking_type", "user_name", "user_phone_number"]
+        attributes: ["id", "date_of_party", "from_timing_of_party", "to_timing_of_party", "user_id", "party_type_id", "booking_type", "user_name", "user_phone_number", "num_of_people", "booking_charge"]
     }).then((data) => callback(null, data)).catch((e) => callback(e));
 }
 
